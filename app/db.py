@@ -15,6 +15,7 @@ def get_db():
                 user=os.getenv('DB_USER', 'postgres'),
                 password=os.getenv('DB_PASS', 'password'),
                 port=os.getenv('DB_PORT', 5432),
+                sslmode=os.getenv('DB_SSLMODE', 'prefer'),
                 options='-c search_path=votacion,public'
             )
             g.db.autocommit = False # Manejo manual de transacciones
