@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<a href="{{ url_for('admin.elecciones') }}" class="back-link">&larr; Volver a Elecciones</a>
+
+<div class="page-header">
+    <div>
+        <h1>Resultados: {{ eleccion.titulo }}</h1>
+        <p class="text-muted mb-0">
+            {% if eleccion.cerrada %}
+            <span class="badge badge-danger">CERRADA</span> — Resultados finales
+            {% elif eleccion.activa %}
+            <span class="badge badge-success">ACTIVA</span> — Resultados parciales (en tiempo real)
+            {% endif %}
+            &middot; Vuelta {{ eleccion.vuelta_actual }}
+        </p>
+    </div>
+</div>
+
+{# Summary cards #}
+<div class="result-summary">
+    <div class="card stat-card">
+        <h3>Total de Votos</h3>
+        <p class="stat-number">{{ total_votos }}</p>
+    </div>
+    <div class="card stat-card" style="cursor: pointer; position: relative;"
+        onclick="document.getElementById('votantes-panel').style.display = document.getElementById('votantes-panel').style.display === 'none' ? 'block' : 'none';">
+        <h3>Votantes Registrados</h3>
+        <p class="stat-number">{{ total_votantes }}</p>
+        <small class="text-muted">🔍 Click para ver detalle</small>
+    </div>
+    <div class="card stat-card">
+        <h3>Participación</h3>
+        <p class="stat-number">{{ participacion }}%</p>
+    </div>
+</div>
+
+{# Panel de votantes con tabs #}
+<div id="votantes-panel" class="card" style="display: none;">
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+        <h3 class="mb-0">👥 Detalle de Votantes</h3>
+        <button class="btn btn-sm no-print" onclick="document.getElementById('votantes-panel').style.display='none';">✕
+            Cerrar</button>
+    </div>
+
+    {# Tabs #}
+    <div class="no-print" style="display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1rem;">
+        <button id="tab-sufragaron" onclick="switchVoterTab('sufragaron')"
+            style="padding: 0.5rem 1.2rem; border: none; background: var(--primary); color: white; border-radius: 8px 8px 0 0; font-weight: 600; cursor: pointer;">
+            ✅ Sufragaron ({{ votantes_que_votaron | length }})
+        </button>
+        <button id="tab-pendientes" onclick="switchVoterTab('pendientes')"
+            style="padding: 0.5rem 1.2rem; border: none; background: var(--bg-light); color: var(--text-secondary); border-radius: 8px 8px 0 0; font-weight: 600; cursor: pointer;">
+            {% if eleccion.cerrada %}❌ No sufragaron{% else %}⏳ Pendientes{% endif %} ({{ votantes_pendientes | length
+            }})
+        </button>
+    </div>
+
+    {# Tab: Sufragaron #}
+    <div id="panel-sufragaron">
+        {% if votantes_que_votaron %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Foto</th>
+                        <th>Cédula</th>
+                        <th>Nombres</th>
+                        <th>Fecha/Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in votantes_que_votaron %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <img src="{{ url_for('static', filename='img/avatar_female.png') if v.genero == 'F' else url_for('static', filename='img/avatar_male.png') }}"
+                                alt="" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+                        </td>
+                        <td><code>{{ v.cedula }}</code></td>
+                        <td>{{ v.nombres }} {{ v.apellidos }}</td>
+                        <td><small class="text-muted">{{ v.fecha_voto.strftime('%d/%m/%Y %H:%M') if v.fecha_voto else
+                                '-' }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center">Ningún votante ha sufragado aún.</p>
+        {% endif %}
+    </div>
+
+    {# Tab: Pendientes / No sufragaron #}
+    <div id="panel-pendientes" style="display: none;">
+        {% if votantes_pendientes %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Foto</th>
+                        <th>Cédula</th>
+                        <th>Nombres</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in votantes_pendientes %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <img src="{{ url_for('static', filename='img/avatar_female.png') if v.genero == 'F' else url_for('static', filename='img/avatar_male.png') }}"
+                                alt="" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+                        </td>
+                        <td><code>{{ v.cedula }}</code></td>
+                        <td>{{ v.nombres }} {{ v.apellidos }}</td>
+                        <td>
+                            {% if eleccion.cerrada %}
+                            <span class="badge badge-danger">No sufragó</span>
+                            {% else %}
+                            <span class="badge badge-warning">Pendiente</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center">🎉 ¡Todos los votantes han sufragado!</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function switchVoterTab(tab) {
+        const tabs = ['sufragaron', 'pendientes'];
+        tabs.forEach(t => {
+            document.getElementById('panel-' + t).style.display = (t === tab) ? 'block' : 'none';
+            const btn = document.getElementById('tab-' + t);
+            if (t === tab) {
+                btn.style.background = 'var(--primary)';
+                btn.style.color = 'white';
+            } else {
+                btn.style.background = 'var(--bg-light)';
+                btn.style.color = 'var(--text-secondary)';
+            }
+        });
+    }
+</script>
+
+{# Segunda vuelta #}
+{% if eleccion.tiene_segunda_vuelta and eleccion.vuelta_actual == 1 and not eleccion.cerrada %}
+<div class="card card-warning">
+    <h3>Gestión de Vueltas</h3>
+    <p class="text-muted">Si el escrutinio ha finalizado, puedes generar la segunda vuelta automáticamente.</p>
+    <form action="{{ url_for('admin.generar_segunda_vuelta', election_id=eleccion.id) }}" method="post"
+        onsubmit="return confirm('¿Seguro? Esto bloqueará la primera vuelta y filtrará candidatos.');">
+        <button class="btn btn-warning">Cerrar 1ra y Generar 2da Vuelta</button>
+    </form>
+</div>
+{% endif %}
+
+{# Results per cargo #}
+{% for cargo, candidatos in resultados.items() %}
+<div class="card">
+    <h3>🏷️ {{ cargo }}</h3>
+
+    {% if candidatos %}
+    {% set ns = namespace(total_cargo=0, max_votos=0) %}
+    {% for c in candidatos %}
+    {% set ns.total_cargo = ns.total_cargo + c.total %}
+    {% if c.total > ns.max_votos %}
+    {% set ns.max_votos = c.total %}
+    {% endif %}
+    {% endfor %}
+
+    {# Check for ties at max #}
+    {% set ns2 = namespace(count_max=0) %}
+    {% for c in candidatos %}
+    {% if c.total == ns.max_votos %}
+    {% set ns2.count_max = ns2.count_max + 1 %}
+    {% endif %}
+    {% endfor %}
+    {% set hay_empate = ns2.count_max > 1 and ns.max_votos > 0 %}
+
+    {% set colors = ['#10b981', '#2563eb', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#ec4899', '#14b8a6', '#f97316',
+    '#6366f1'] %}
+
+    {% for c in candidatos %}
+    {% set pct = ((c.total / ns.total_cargo * 100) | round(1)) if ns.total_cargo > 0 else 0 %}
+    {% set bar_pct = ((c.total / ns.max_votos * 100) | round(1)) if ns.max_votos > 0 else 0 %}
+    {% set es_primero = c.total == ns.max_votos and ns.max_votos > 0 %}
+    {% set cand_color = colors[loop.index0 % colors|length] %}
+
+    <div
+        class="result-candidate {% if es_primero and eleccion.cerrada %}{% if hay_empate %}tie{% else %}winner{% endif %}{% endif %}">
+        <div class="result-rank">{{ loop.index }}</div>
+
+        {% if c.foto_url %}
+        <img src="{{ url_for('static', filename='uploads/candidatos/' + c.foto_url) }}" alt="{{ c.nombres }}"
+            style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--border-color);">
+        {% else %}
+        <img src="{{ url_for('static', filename='img/avatar_female.png') if c.genero == 'F' else url_for('static', filename='img/avatar_male.png') }}"
+            alt="{{ c.nombres }}"
+            style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--border-color);">
+        {% endif %}
+
+        <div class="result-info">
+            <div class="result-name">
+                {{ c.nombres }}
+                {% if es_primero and eleccion.cerrada %}
+                {% if hay_empate %}
+                <span class="result-tie-badge">⚠️ EMPATE</span>
+                {% else %}
+                <span class="result-winner-badge">🏆 GANADOR</span>
+                {% endif %}
+                {% endif %}
+            </div>
+            <div class="result-party">{{ c.partido }}</div>
+        </div>
+
+        <div class="result-bar-wrapper">
+            <div class="result-bar-track">
+                <div class="result-bar-fill"
+                    style="width: {{ bar_pct if bar_pct > 3 else 3 }}%; background: {% if es_primero and eleccion.cerrada %}{% if hay_empate %}#f59e0b{% else %}#10b981{% endif %}{% else %}{{ cand_color }}{% endif %};">
+                    <span class="result-bar-label">{{ pct }}%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-votes">
+            <div class="result-votes-number">{{ c.total }}</div>
+            <div class="result-votes-pct">votos</div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <p class="text-muted text-center">Sin votos registrados para este cargo.</p>
+    {% endif %}
+</div>
+{% endfor %}
+
+{# Chart.js section #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="grid">
+    {% for cargo, candidatos in resultados.items() %}
+    {% if candidatos %}
+    <div class="card">
+        <h3 class="text-center">{{ cargo }}</h3>
+        <div style="height: 220px;" data-labels='{{ candidatos | map(attribute="nombres") | list | tojson }}'
+            data-votes='{{ candidatos | map(attribute="total") | list | tojson }}'
+            class="chart-container-{{ loop.index0 }}">
+            <canvas id="chart-{{ loop.index0 }}"></canvas>
+            <script>
+                (function () {
+                    const container = document.querySelector(".chart-container-{{ loop.index0 }}");
+                    const labels = JSON.parse(container.dataset.labels);
+                    const votes = JSON.parse(container.dataset.votes);
+                    new Chart(document.getElementById('chart-{{ loop.index0 }}'), {
+                        type: "doughnut",
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: votes,
+                                backgroundColor: ['#10b981', '#2563eb', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#ec4899']
+                            }]
+                        },
+                        options: {
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+                        }
+                    });
+                })();
+            </script>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

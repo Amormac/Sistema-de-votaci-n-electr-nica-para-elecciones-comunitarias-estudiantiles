@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content_voter %}
+<div class="certificate">
+    <div class="card">
+        <h1 style="color: var(--primary);">Certificado de Votación</h1>
+        <hr>
+        <p>Se certifica que:</p>
+        <h2>{{ usuario.nombres }} {{ usuario.apellidos }}</h2>
+        <p>Cédula: <strong>{{ usuario.cedula }}</strong></p>
+        <p>Ha sufragado correctamente en:</p>
+        <h3>{{ eleccion.titulo }} (Vuelta {{ certificado.vuelta }})</h3>
+
+        <div class="cert-hash">
+            HASH: {{ certificado.codigo }}
+        </div>
+
+        <p class="text-muted"><small>Fecha: {{ certificado.fecha_emision }}</small></p>
+
+        <div class="btn-group" style="justify-content: center;">
+            <button onclick="window.print()" class="btn btn-primary">🖨️ Imprimir / PDF</button>
+            <a href="{{ url_for('voter.votar') }}" class="btn btn-success">🏠 Volver al Inicio</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

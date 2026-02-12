@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Panel de Administración</h1>
+</div>
+
+<div class="grid-3">
+    <div class="card stat-card">
+        <h3>Elecciones</h3>
+        <p class="stat-number">{{ stats.elecciones }}</p>
+        <a href="{{ url_for('admin.elecciones') }}" class="btn btn-sm btn-primary">Gestionar</a>
+    </div>
+    <div class="card stat-card">
+        <h3>Votos Totales</h3>
+        <p class="stat-number">{{ stats.votos }}</p>
+    </div>
+    <div class="card stat-card">
+        <h3>Votantes Registrados</h3>
+        <p class="stat-number">{{ stats.usuarios }}</p>
+        <a href="{{ url_for('admin.usuarios') }}" class="btn btn-sm">Gestionar</a>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <h3>Última Actividad (Auditoría)</h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Evento</th>
+                    <th>Detalle</th>
+                    <th>IP</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in auditoria %}
+                <tr>
+                    <td><span class="badge badge-info">{{ row.evento }}</span></td>
+                    <td>{{ row.detalle }}</td>
+                    <td>{{ row.ip_origen }}</td>
+                    <td>{{ row.fecha_evento }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">Sin actividad registrada</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

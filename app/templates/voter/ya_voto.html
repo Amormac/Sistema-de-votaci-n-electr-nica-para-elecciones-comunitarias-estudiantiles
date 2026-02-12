@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content_voter %}
+<div class="text-center" style="padding: 4rem 1rem;">
+    <h1>Ya has votado en esta elección</h1>
+    <p class="text-muted">Puedes ver tu certificado a continuación.</p>
+    <div class="btn-group" style="justify-content: center;">
+        <a href="{{ url_for('voter.certificado', codigo=certificado.codigo) }}" class="btn btn-primary">📜 Ver
+            Certificado</a>
+        <a href="{{ url_for('voter.votar') }}" class="btn btn-success">🏠 Volver al Inicio</a>
+    </div>
+</div>
+{% endblock %}

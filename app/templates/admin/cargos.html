@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Gestión de Cargos</h1>
+</div>
+<p class="text-muted">Estos son los cargos "maestros" que pueden asignarse a las elecciones.</p>
+
+<div class="grid-2">
+    <div class="card">
+        <h3>Nuevo Cargo</h3>
+        <form method="post">
+            <label>Nombre</label>
+            <input type="text" name="nombre" placeholder="Ej: Presidente del Consejo" required>
+            <label>Descripción</label>
+            <input type="text" name="descripcion" placeholder="Descripción breve del cargo">
+            <button type="submit" class="btn btn-success">Guardar</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Cargos Existentes</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in cargos %}
+                    <tr>
+                        <td>{{ c.id }}</td>
+                        <td><strong>{{ c.nombre }}</strong></td>
+                        <td class="text-muted">{{ c.descripcion or '—' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">No hay cargos registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

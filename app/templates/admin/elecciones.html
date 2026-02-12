@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Gestión de Elecciones</h1>
+</div>
+
+<div class="card">
+    <h3>Nueva Elección</h3>
+    <form method="post">
+        <input type="hidden" name="action" value="create">
+        <label>Título</label>
+        <input type="text" name="titulo" required placeholder="Ej: Elección Consejo Estudiantil 2026">
+
+        <div class="form-row">
+            <div>
+                <label>Fecha Inicio</label>
+                <input type="datetime-local" name="fecha_inicio" required>
+            </div>
+            <div>
+                <label>Fecha Fin</label>
+                <input type="datetime-local" name="fecha_fin" required>
+            </div>
+        </div>
+
+        <div class="form-check">
+            <input type="checkbox" name="tiene_segunda_vuelta" id="segunda_vuelta">
+            <label for="segunda_vuelta">Con posible Segunda Vuelta</label>
+        </div>
+
+        <button type="submit" class="btn btn-success">Crear Elección</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Listado de Elecciones</h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Período</th>
+                    <th>Estado</th>
+                    <th>Vuelta</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in elecciones %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('admin.eleccion_detalle', id=e.id) }}">
+                            <strong>{{ e.titulo }}</strong>
+                        </a>
+                    </td>
+                    <td><small class="text-muted">{{ e.fecha_inicio }} — {{ e.fecha_fin }}</small></td>
+                    <td>
+                        {% if e.cerrada %}
+                        <span class="badge badge-danger">CERRADA</span>
+                        {% elif e.activa %}
+                        <span class="badge badge-success">ACTIVA</span>
+                        {% else %}
+                        <span class="badge badge-neutral">CONFIGURANDO</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ e.vuelta_actual }}</td>
+                    <td>
+                        <div class="btn-group">
+                            {# Configurar (solo si no está activa ni cerrada) #}
+                            {% if not e.activa and not e.cerrada %}
+                            <a href="{{ url_for('admin.eleccion_detalle', id=e.id) }}" class="btn btn-sm btn-primary">⚙️
+                                Configurar</a>
+                            {% endif %}
+
+                            {# Resultados (si activa o cerrada) #}
+                            {% if e.activa or e.cerrada %}
+                            <a href="{{ url_for('admin.resultados', election_id=e.id) }}"
+                                class="btn btn-sm btn-primary">📊 Resultados</a>
+                            {% endif %}
+
+                            {# Desactivar (si activa) #}
+                            {% if e.activa %}
+                            <form method="post" class="inline-form">
+                                <input type="hidden" name="action" value="toggle_active">
+                                <input type="hidden" name="id" value="{{ e.id }}">
+                                <button class="btn btn-sm btn-danger">⏸ Desactivar</button>
+                            </form>
+                            {% endif %}
+
+                            {# Cerrar (si no está cerrada) #}
+                            {% if not e.cerrada %}
+                            <form method="post" class="inline-form"
+                                onsubmit="return confirm('¿Cerrar esta elección indefinidamente?');">
+                                <input type="hidden" name="action" value="close">
+                                <input type="hidden" name="id" value="{{ e.id }}">
+                                <button class="btn btn-sm btn-danger">🔒 Cerrar</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No hay elecciones registradas</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

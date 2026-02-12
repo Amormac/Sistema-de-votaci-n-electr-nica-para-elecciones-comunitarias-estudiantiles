@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Votación{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        {% if g.user %}
+        <nav class="top-bar">
+            <div class="brand">🗳️ Urna Electrónica</div>
+            <div class="user-info">
+                <span>{{ g.user['nombres'] }} {{ g.user['apellidos'] }}</span>
+                <span class="badge badge-info">{{ g.user['rol'] }}</span>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-danger" {% if tiene_pendientes
+                    %}onclick="return confirm('⚠️ ¿Seguro que deseas salir? Tienes elecciones pendientes por votar.');"
+                    {% endif %}>Salir</a>
+            </div>
+        </nav>
+
+        {% if g.user['rol'] == 'ADMIN' %}
+        <div class="admin-layout">
+            <aside class="sidebar">
+                <div class="sidebar-title">Navegación</div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="{{ url_for('admin.dashboard') }}"
+                            class="sidebar-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                            <span class="sidebar-icon">📊</span> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('admin.elecciones') }}"
+                            class="sidebar-link {% if request.endpoint in ['admin.elecciones', 'admin.eleccion_detalle', 'admin.resultados'] %}active{% endif %}">
+                            <span class="sidebar-icon">🗳️</span> Elecciones
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('admin.usuarios') }}"
+                            class="sidebar-link {% if request.endpoint == 'admin.usuarios' %}active{% endif %}">
+                            <span class="sidebar-icon">📋</span> Usuarios
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+
+            <main class="content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+        {% else %}
+        {# Voter layout - no sidebar #}
+        <main class="content-public">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% block content_voter %}{% endblock %}
+        </main>
+        {% endif %}
+
+        {% else %}
+        {# Public layout - no sidebar, no topbar #}
+        <main class="content-public">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% block content_public %}{% endblock %}
+        </main>
+        {% endif %}
+
+        <footer class="footer">
+            <p>&copy; 2026 Sistema de Votación Electrónica - Proyecto Universitario</p>
+        </footer>
+    </div>
+</body>
+
+</html>

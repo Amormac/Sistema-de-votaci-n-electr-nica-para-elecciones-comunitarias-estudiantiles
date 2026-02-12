@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content_voter %}
+<div class="text-center mb-3">
+    <h1>{{ eleccion.titulo }}</h1>
+    <span class="badge badge-info">Vuelta {{ eleccion.vuelta_actual }}</span>
+</div>
+
+<form action="{{ url_for('voter.confirmar_voto') }}" method="post"
+    onsubmit="return confirm('¿Confirmar voto? No podrá cambiarlo después.');">
+    <input type="hidden" name="election_id" value="{{ eleccion.id }}">
+    <input type="hidden" name="vuelta" value="{{ eleccion.vuelta_actual }}">
+
+    {% for item in boleta %}
+    <div class="card">
+        <h3>{{ item.cargo.nombre }}</h3>
+        <p class="text-muted">{{ item.cargo.descripcion }}</p>
+        <input type="hidden" name="cargo_ids" value="{{ item.cargo.id }}">
+
+        <div class="candidate-grid">
+            {% for cand in item.candidatos %}
+            <label class="candidate-option">
+                <input type="radio" name="candidato_{{ item.cargo.id }}" value="{{ cand.id }}" required
+                    style="display:none;">
+                <div class="candidate-card">
+                    {% if cand.foto_url %}
+                    <img src="{{ url_for('static', filename='uploads/candidatos/' + cand.foto_url) }}"
+                        alt="Foto de {{ cand.nombres }}">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='img/avatar_female.png') if cand.genero == 'F' else url_for('static', filename='img/avatar_male.png') }}"
+                        alt="Foto de {{ cand.nombres }}">
+                    {% endif %}
+                    <div class="candidate-name">{{ cand.nombres }}</div>
+                    <div class="candidate-party">{{ cand.partido }}</div>
+                </div>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="text-center mt-3">
+        <button type="submit" class="btn btn-success" style="font-size: 1.1rem; padding: 0.85rem 2.5rem;">
+            ✅ CONFIRMAR VOTO
+        </button>
+    </div>
+</form>
+{% endblock %}

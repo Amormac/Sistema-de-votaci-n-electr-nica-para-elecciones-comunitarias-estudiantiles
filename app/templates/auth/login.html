@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content_public %}
+<div class="login-wrapper">
+    <div class="card">
+        <h2 class="text-center mb-0">🗳️ Ingreso</h2>
+        <p class="text-center text-muted">Ingrese sus credenciales para acceder</p>
+        <form method="post">
+            <label>Cédula</label>
+            <input type="text" name="cedula" required pattern="\d{10}" maxlength="10"
+                placeholder="Ingrese su cédula (10 dígitos)" title="La cédula debe tener 10 dígitos">
+
+            <label>Contraseña</label>
+            <input type="password" name="password" required placeholder="Ingrese su contraseña">
+
+            <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

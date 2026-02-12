@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content_voter %}
+<div style="padding: 2rem 1rem; max-width: 700px; margin: 0 auto;">
+    <h1 style="text-align: center; margin-bottom: 0.5rem;">🗳️ Elecciones Disponibles</h1>
+    <p class="text-muted text-center">Selecciona una elección para votar.</p>
+
+    {% if pendientes %}
+    <h3 style="margin-top: 1.5rem;">📋 Pendientes de votar</h3>
+    {% for e in pendientes %}
+    <a href="{{ url_for('voter.votar_eleccion', election_id=e.id) }}" class="card"
+        style="display: block; text-decoration: none; color: inherit; transition: transform 0.15s, box-shadow 0.15s; border-left: 4px solid var(--success);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+                <h3 class="mb-0" style="font-size: 1.1rem;">{{ e.titulo }}</h3>
+                <p class="text-muted mb-0" style="font-size: 0.85rem;">
+                    Vuelta {{ e.vuelta_actual }} &middot;
+                    Cierra: {{ e.fecha_fin.strftime('%d/%m/%Y %H:%M') if e.fecha_fin else 'Sin fecha' }}
+                </p>
+            </div>
+            <span class="badge badge-success" style="font-size: 0.9rem;">Votar →</span>
+        </div>
+    </a>
+    {% endfor %}
+    {% endif %}
+
+    {% if votadas %}
+    <h3 style="margin-top: 1.5rem;">✅ Ya votaste</h3>
+    {% for item in votadas %}
+    <div class="card" style="border-left: 4px solid var(--secondary); opacity: 0.8;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+                <h3 class="mb-0" style="font-size: 1.1rem;">{{ item.eleccion.titulo }}</h3>
+                <p class="text-muted mb-0" style="font-size: 0.85rem;">
+                    Vuelta {{ item.eleccion.vuelta_actual }}
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span class="badge badge-neutral">Completado</span>
+                {% if item.certificado %}
+                <a href="{{ url_for('voter.certificado', codigo=item.certificado.codigo) }}"
+                    class="btn btn-sm btn-primary">📜 Certificado</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if not pendientes and not votadas %}
+    <div class="text-center" style="padding: 2rem;">
+        <p class="text-muted">No hay elecciones activas para ti en este momento.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

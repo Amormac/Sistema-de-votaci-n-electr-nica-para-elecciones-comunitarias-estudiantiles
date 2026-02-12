@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<a href="{{ url_for('admin.elecciones') }}" class="back-link">&larr; Volver a Elecciones</a>
+
+<div class="page-header">
+    <h1>Cargos para: {{ eleccion.titulo }}</h1>
+</div>
+
+<div class="card">
+    <form method="post">
+        <h3>Selecciona los cargos a elegir</h3>
+        {% for c in cargos %}
+        <div class="form-check">
+            <input type="checkbox" name="cargos" value="{{ c.id }}" id="cargo_{{ c.id }}" {% if c.id in asignados
+                %}checked{% endif %}>
+            <label for="cargo_{{ c.id }}">{{ c.nombre }}</label>
+        </div>
+        {% else %}
+        <p class="text-muted">No hay cargos creados. <a href="{{ url_for('admin.cargos') }}">Crear uno primero</a>.</p>
+        {% endfor %}
+
+        {% if cargos %}
+        <button type="submit" class="btn btn-success mt-2">Guardar Configuración</button>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

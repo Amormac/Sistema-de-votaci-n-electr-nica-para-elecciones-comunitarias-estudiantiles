@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Gestión de Usuarios</h1>
+</div>
+
+<div class="card">
+    <h3>Carga Masiva (CSV)</h3>
+    <p class="text-muted">Sube un archivo CSV con las columnas:
+        <code>cedula, nombres, apellidos, fecha_nacimiento, clave, habilitado</code>
+    </p>
+    <p class="text-muted"><em>Formato fecha: YYYY-MM-DD</em></p>
+
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv" required>
+        <button type="submit" class="btn btn-primary">Subir y Procesar</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Usuarios Registrados</h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cédula</th>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>Rol</th>
+                    <th>Habilitado</th>
+                    <th>Registro</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td><code>{{ u.cedula }}</code></td>
+                    <td>{{ u.nombres }}</td>
+                    <td>{{ u.apellidos }}</td>
+                    <td><span class="badge {% if u.rol == 'ADMIN' %}badge-warning{% else %}badge-info{% endif %}">{{
+                            u.rol }}</span></td>
+                    <td>
+                        {% if u.habilitado %}
+                        <span class="badge badge-success">Sí</span>
+                        {% else %}
+                        <span class="badge badge-danger">No</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted">{{ u.fecha_creacion }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">No hay usuarios registrados</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

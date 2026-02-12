@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content_public %}
+<div class="hero">
+    <h1>Voto Electrónico Seguro</h1>
+    <p class="hero-subtitle">
+        Sistema de votación transparente para elecciones comunitarias y estudiantiles.
+        Participe democráticamente desde cualquier lugar.
+    </p>
+
+    <div class="action-cards">
+        <a href="{{ url_for('auth.login') }}" class="action-card-link">
+            <div class="card">
+                <div class="feature-icon">🗳️</div>
+                <h3>Soy Votante</h3>
+                <p>Ingrese al sistema para ejercer su derecho al voto en las elecciones activas.</p>
+                <span class="btn btn-primary btn-block">Ingresar a Votar</span>
+            </div>
+        </a>
+
+        <a href="{{ url_for('admin.dashboard') }}" class="action-card-link">
+            <div class="card">
+                <div class="feature-icon">🛡️</div>
+                <h3>Administración</h3>
+                <p>Gestione elecciones, candidatos y supervise los resultados en tiempo real.</p>
+                <span class="btn btn-secondary btn-block">Panel de Control</span>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}
